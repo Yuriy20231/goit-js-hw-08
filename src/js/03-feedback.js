@@ -1,40 +1,45 @@
+
 import throttle from "lodash.throttle";
-const form = document.querySelector('.feedback-form')
-
-const textarea = document.querySelector('.feedback-form textarea')
-const input = document.querySelector('.feedback-form input')
-const saveItem = localStorage.getItem('formdata');
-let temp = JSON.parse(saveItem);
-reload();
-const formData ={};
 
 
-form.addEventListener('submit', ((e)=>{
-	e.preventDefault();
-  console.log(`Email: ${JSON.parse(localStorage.getItem('formdata')).email}, Message: ${JSON.parse(localStorage.getItem('formdata')).message}`)
-	e.target.reset();
-	localStorage.removeItem('formdata')
-}))
+const formEl = document.querySelector('.feedback-form');
+const emailInput = document.querySelector('input')
+const messageInput = document.querySelector('textarea')
 
-function onChangeInput(e){
-if(saveItem){
-  for (let key in temp){
-    formData[key] = temp[key];
-  }
-}
-  formData[e.target.name]=e.target.value;
-	localStorage.setItem('formdata', JSON.stringify(formData));
-  }
+formEl.addEventListener('submit', onFormSubmit);
+formEl.addEventListener('input', throttle(formInput, 1000));
 
+function formInput() {
+    const feedbackFormState = {
+      email: emailInput.value,
+      message: messageInput.value,
+    };
 
-form.addEventListener('input',throttle(onChangeInput,500))
+    localStorage.setItem('feedback-form-state', JSON.stringify(feedbackFormState));
 
+};
 
-function reload () {
-if(saveItem){
-  for (let key in temp){
-    form.elements[key].value = temp[key];
-  }
-  }
-}
+function onFormSubmit(event) {
+    event.preventDefault();
 
+      console.log({
+    email: emailInput.value,
+    message: messageInput.value,
+  });
+   
+    event.currentTarget.reset();
+    localStorage.removeItem('feedback-form-state');
+};
+
+window.addEventListener('load', () => {
+    const feedbackFormState = JSON.parse(localStorage.getItem('feedback-form-state'));
+
+    if (feedbackFormState) {
+      emailInput.value = feedbackFormState.email;
+      messageInput.value = feedbackFormState.message;
+    } else {
+      emailInput.value = '';
+      messageInput.value = '';
+    }
+    return feedbackFormState;
+});
